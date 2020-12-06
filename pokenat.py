@@ -4,6 +4,8 @@ import argparse
 import pokebase
 import json
 
+from requests.exceptions import HTTPError
+
 parser = argparse.ArgumentParser(allow_abbrev=False)
 
 # load_group = parser.add_argument_group('Load', 'Use this to retrieve data from API (pokeapi.co).')
@@ -77,8 +79,8 @@ class PokemonSpeciesSerializer(json.JSONEncoder):
         global lang_wanted
         if isinstance(obj, pokebase.APIResource) and obj.endpoint == "pokemon-species":
             data = dict()
-            data["name"] = obj.name
-            data["id"] = str(obj.id)
+            data['id'] = str(obj.id)
+            data['name'] = obj.name
             data["names"] = dict()
             for name in obj.names:
                 if name.language.name in lang_wanted:
@@ -110,9 +112,18 @@ def prepare(c_data, force=False):
     for i, pokemon_entry in enumerate(pokedex.pokemon_entries):
         id = pokemon_entry.entry_number
         pokemon = pokebase.pokemon_species(id)
+        try:
+            sprite = pokebase.SpriteResource('pokemon', id)
+        except HTTPError as exc:
+            print("Sprite error: %s" % exc)
+            sprite = None
         #print(pokemon.id)
-        
+
         d_pokedex[pokemon.id] = json.loads(PokemonSpeciesSerializer().encode(pokemon))
+        if sprite:
+            d_pokedex[pokemon.id]['sprite'] = sprite.url
+        else:
+            d_pokedex[pokemon.id]['sprite'] = ""
         for name in pokemon.names:
             if name.language.name in lang_wanted:
                 d_search[name.name.lower()] = str(pokemon.id)
