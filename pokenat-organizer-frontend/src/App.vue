@@ -1,8 +1,8 @@
 <template>
   <div id="container">
     <Header />
-    <SearchBar :index="index" :pokedex="pokedex" />
-    <Organizer :id="selectedId" />
+    <SearchBar :index="index" :pokedex="pokedex" @select-pokemon="selectPokemon" />
+    <Organizer :pokemon="selectedPokemon" :pokedex="pokedex" />
   </div>
 </template>
 
@@ -24,7 +24,7 @@ import Organizer from '@/components/Organizer.vue';
 export default class App extends Vue {
     private index: Array<Record<string, string>> = [];
     private pokedex: Array<Pokemon> = [];
-    private selectedId: number = 0;
+    private selectedPokemon: Pokemon | null = null;
 
     mounted() {
         this.getIndex()
@@ -52,6 +52,10 @@ export default class App extends Vue {
             this.pokedex = pokedexList
         })
     }
+
+    public selectPokemon(pokemon: Pokemon) {
+        this.selectedPokemon = pokemon
+    }
 }
 </script>
 
@@ -63,6 +67,7 @@ export default class App extends Vue {
 }
 
 #container {
+  @apply max-w-2xl mx-auto;
   @apply flex flex-col h-screen;
 }
 </style>

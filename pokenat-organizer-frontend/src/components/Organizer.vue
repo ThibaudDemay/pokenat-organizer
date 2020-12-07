@@ -1,9 +1,20 @@
 <template>
     <div id="organizer">
-        <div v-if="id != 0">
-        Pokemon: {{pokemon}}
+        <div v-if="pokemon != undefined">
+            <p>
+                Pokemon: {{pokemon.names['fr']}} [{{pokemon.id}}]<br />
+                Current box : {{currentBox}}<br />
+                Pokemon in Box: {{currentPos}} [{{currentLine}}][{{currentCol}}]
+            </p>
+            <ul id="box">
+                <li class="box-case" v-for="cp in getPokemonsInBox()" :style="boxCaseStyle()" :key="cp.id">
+                    <div class="box-case-content" :class="{active: cp.id == pokemon.id}">
+                        <img v-if="cp.sprite" :src="cp.sprite" />
+                    </div>
+                </li>
+            </ul>
         </div>
-        <div v-else-if="id == 0">
+        <div v-else-if="pokemon == undefined">
         No pokemon selected
         </div>
     </div>
@@ -16,9 +27,17 @@ import PokeapiDataService from '@/services/PokeapiData.service';
 
 @Options({
     props: {
-        id: {
-            type: Number,
+        pokemon: {
             required: true
+        },
+        pokedex: {
+            type: Array,
+            required: true
+        }
+    },
+    watch: {
+        'pokemon': {
+            handler: 'onPokemonChanged'
         }
     }
 })
@@ -29,20 +48,21 @@ export default class Organizer extends Vue {
     private currentPos: number = 0;
     private nbCol: number = 6;
     private nbLine: number = 5;
-    private id!: number;
-    private pokemon?: Pokemon;
+    private pokemon!: Pokemon | null;
+    private pokedex!: Array<Pokemon>;
+    private pokemonFromApi?: Pokemon;
 
-    mounted() {
+    private onPokemonChanged() {
         this.getPokemon()
         this.calculate()
     }
 
     private getPokemon() {
-        if (this.id == 0)
+        if (this.pokemon == undefined)
             return
-        PokeapiDataService.getPokemon(this.id).then(response => {
+        PokeapiDataService.getPokemon(this.pokemon.id).then(response => {
             const data = response.data
-            this.pokemon = data
+            this.pokemonFromApi = data
         })
     }
 
@@ -50,10 +70,22 @@ export default class Organizer extends Vue {
         return this.nbCol * this.nbLine
     }
 
+    private boxCaseStyle(): Record<string, string> {
+        return {
+            width: 100/this.nbCol + "%"
+        }
+    }
+
+    private getPokemonsInBox(): Array<Pokemon> {
+        const start = this.currentBox * this.nbByBox()
+        const end = start + this.nbByBox()
+        return this.pokedex.slice(start, end)
+    }
+
     private calculate() {
-        if (this.id == 0)
+        if (this.pokemon == undefined)
             return
-        const workId = this.id - 1
+        const workId = this.pokemon.id - 1
         this.currentBox = ~~(workId / this.nbByBox())
         this.currentPos = workId - (this.nbByBox() * ~~(workId / this.nbByBox()))
         this.currentLine = ~~(this.currentPos / this.nbCol)
@@ -68,6 +100,23 @@ export default class Organizer extends Vue {
 #organizer {
     @apply flex-1 overflow-y-auto;
     // @apply text-center;
+
+    ul#box {
+        @apply flex flex-wrap;
+        @apply bg-green-100 rounded;
+        > li.box-case {
+            @apply flex p-2;
+            @apply bg-white bg-opacity-50;
+
+            > .box-case-content {
+
+                &.active {
+                    @apply bg-red-900 bg-opacity-50;
+                }
+            }
+
+        }
+    }
 }
 
 </style>

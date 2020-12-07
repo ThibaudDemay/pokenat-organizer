@@ -37,7 +37,8 @@ import Pokemon from '@/models/pokemon.model';
         type: Number,
         default: 20
     }
-  }
+  },
+  emits: ['select-pokemon'] 
 })
 export default class SearchBar extends Vue {
     private index!: Array<Record<string, string>>;
@@ -63,7 +64,8 @@ export default class SearchBar extends Vue {
     }
 
     public selectPokemon(pokemon: Pokemon): void {
-        console.log(pokemon)
+        this.$emit('select-pokemon', pokemon)
+        this.search = ""
     }
 
 }

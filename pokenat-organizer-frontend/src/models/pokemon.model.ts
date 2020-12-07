@@ -27,8 +27,12 @@ class Pokemon {
     public pokedex: Record<string, number>;
     public sprite: string;
 
-    constructor() {
-
+    constructor(id: number, name: string, names: Record<string, string>, pokedex: Record<string, number>, sprite: string) {
+        this.id = id
+        this.name = name
+        this.names = names
+        this.pokedex = pokedex
+        this.sprite = sprite
     }
 }
 
