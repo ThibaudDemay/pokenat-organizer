@@ -1,5 +1,6 @@
 
 *.json
+!pokenat-organizer-frontend/*.json
 
 node_modules/
 

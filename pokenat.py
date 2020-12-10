@@ -21,6 +21,7 @@ group.add_argument("--load", dest='load', action='store_true')
 parser.add_argument("-f", "--force", dest='force', action='store_true')
 parser.add_argument("-d", "--datafile", type=str, default='./data.json')
 parser.add_argument("-i", "--indexfile", type=str, default='./index.json')
+parser.add_argument("-g", "--langfile", type=str, default='./lang.json')
 parser.add_argument("-n", "--language", action='store', dest='language', type=str, nargs='*', default=['fr', 'en'])
 group.add_argument("--id", type=int)
 group.add_argument("--name", type=str)
@@ -172,6 +173,7 @@ if __name__ == "__main__":
         data, index = prepare(data, args.force)
         save_json_file(args.datafile, data)
         save_json_file(args.indexfile, index)
+        save_json_file(args.langfile, lang_wanted)
     else:
 
         if args.id:

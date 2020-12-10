@@ -1,8 +1,8 @@
 <template>
   <div id="container">
-    <Header />
-    <SearchBar :index="index" :pokedex="pokedex" @select-pokemon="selectPokemon" />
-    <Organizer :pokemon="selectedPokemon" :pokedex="pokedex" />
+    <Header :language="language" @select-language="selectLanguage" :langSelect="selectedLanguage"/>
+    <SearchBar :index="index" :pokedex="pokedex" @select-pokemon="selectPokemon"  :lang="selectedLanguage"/>
+    <Organizer :pokemon="selectedPokemon" :pokedex="pokedex"  :lang="selectedLanguage"/>
   </div>
 </template>
 
@@ -22,13 +22,25 @@ import Organizer from '@/components/Organizer.vue';
   },
 })
 export default class App extends Vue {
+    private language: Array<string> = [];
     private index: Array<Record<string, string>> = [];
     private pokedex: Array<Pokemon> = [];
+    private selectedLanguage: string | null = 'en';
     private selectedPokemon: Pokemon | null = null;
 
     mounted() {
+        this.getLanguage()
         this.getIndex()
         this.getPokedex()
+    }
+
+    private getLanguage() {
+        LocalDataService.getLanguage().then(response => {
+          this.language = response.data
+        })
+        if (localStorage.getItem('language')) {
+            this.selectedLanguage = localStorage.getItem('language')
+        }
     }
 
     private getIndex() {
@@ -53,7 +65,12 @@ export default class App extends Vue {
         })
     }
 
-    public selectPokemon(pokemon: Pokemon) {
+    private selectLanguage(language: string) {
+        localStorage.setItem('language', language)
+        this.selectedLanguage = language
+    }
+
+    private selectPokemon(pokemon: Pokemon) {
         this.selectedPokemon = pokemon
     }
 }

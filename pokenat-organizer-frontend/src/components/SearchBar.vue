@@ -9,7 +9,7 @@
                 <li v-else-if="searchdata.length < maxItem" class="pokemon" v-for="(pokemon, i) in searchdata" :key="i" v-on:click="selectPokemon(pokemon)">
                     <img class="sprite" :src="pokemon.sprite" />
                     <span class="name">
-                        {{ pokemon.names['fr']  }}
+                        {{ pokemon.names[lang]  }}
                     </span>
                 </li>
             </ul>
@@ -36,6 +36,10 @@ import Pokemon from '@/models/pokemon.model';
     maxItem: {
         type: Number,
         default: 20
+    },
+    lang: {
+        type: String,
+        required: true
     }
   },
   emits: ['select-pokemon'] 
@@ -46,6 +50,7 @@ export default class SearchBar extends Vue {
     private search: string = "";
     private searchdata: Array<Pokemon> = [];
     private maxItem!: number;
+    private lang!: string;
 
     public searchResult(): Array<Pokemon> {
         let ids = this.filteredList().map(item => Number(item.id))
@@ -86,7 +91,7 @@ export default class SearchBar extends Vue {
     }
     > #search-result {
         @apply bg-gray-200;
-        @apply absolute w-full px-1 pb-1;
+        @apply absolute max-w-2xl w-full px-1 pb-1;
         > ul {
             @apply flex flex-col bg-gray-100;
             @apply max-h-1/4 w-full overflow-y-auto;

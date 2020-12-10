@@ -12,7 +12,11 @@ class LocalDataService {
         })
     }
 
-    getIndex(){
+    getLanguage() {
+        return this.axios.get('/lang.json')
+    }
+
+    getIndex() {
         return this.axios.get('/index.json')
     }
 

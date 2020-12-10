@@ -2,7 +2,7 @@
     <div id="organizer">
         <div v-if="pokemon != undefined">
             <p>
-                Pokemon: {{pokemon.names['fr']}} [{{pokemon.id}}]<br />
+                Pokemon: {{pokemon.names[lang]}} [{{pokemon.id}}]<br />
                 Current box : {{currentBox}}<br />
                 Pokemon in Box: {{currentPos}} [{{currentLine}}][{{currentCol}}]
             </p>
@@ -33,6 +33,10 @@ import PokeapiDataService from '@/services/PokeapiData.service';
         pokedex: {
             type: Array,
             required: true
+        },
+        lang: {
+            type: String,
+            required: true
         }
     },
     watch: {
@@ -50,6 +54,7 @@ export default class Organizer extends Vue {
     private nbLine: number = 5;
     private pokemon!: Pokemon | null;
     private pokedex!: Array<Pokemon>;
+    private lang!: string;
     private pokemonFromApi?: Pokemon;
 
     private onPokemonChanged() {
@@ -109,6 +114,8 @@ export default class Organizer extends Vue {
             @apply bg-white bg-opacity-50;
 
             > .box-case-content {
+                @apply rounded;
+                @apply bg-white bg-opacity-50;
 
                 &.active {
                     @apply bg-red-900 bg-opacity-50;
