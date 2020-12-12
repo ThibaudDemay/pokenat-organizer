@@ -23,7 +23,7 @@ parser.add_argument("-d", "--datafile", type=str, default="./data.json")
 parser.add_argument("-i", "--indexfile", type=str, default="./index.json")
 parser.add_argument("-g", "--langfile", type=str, default="./lang.json")
 parser.add_argument(
-    "-n", "--language", action="store", dest="language", type=str, nargs="*", default=["fr", "en"],
+    "-n", "--language", action="store", dest="language", type=str, nargs="*", default=["en", "fr"],
 )
 group.add_argument("--id", type=int)
 group.add_argument("--name", type=str)

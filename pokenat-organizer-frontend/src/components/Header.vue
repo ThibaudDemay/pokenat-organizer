@@ -3,7 +3,7 @@
         <div id="ret">
         </div>
         <div id="brand">
-            Pokenat Organizer
+            Pokenat Organizer {{version}}
         </div>
         <div id="lang">
             <button id="lang-menu" aria-haspopup="true" aria-expanded="true" v-on:click="toggleLangDropdown">
@@ -43,6 +43,11 @@ export default class Header extends Vue {
     private languageDropdownShow: boolean = false;
     private language!: Array<string>;
     private langSelect!: string;
+    private version?: string;
+
+    created() {
+        this.version = process.env.APP_VERSION
+    }
 
     private toggleLangDropdown() {
         this.languageDropdownShow = !this.languageDropdownShow

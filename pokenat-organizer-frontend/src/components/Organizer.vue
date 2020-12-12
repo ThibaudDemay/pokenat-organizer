@@ -1,21 +1,29 @@
 <template>
     <div id="organizer">
-        <div v-if="pokemon != undefined">
-            <p>
-                Pokemon: {{pokemon.names[lang]}} [{{pokemon.id}}]<br />
-                Current box : {{currentBox}}<br />
-                Pokemon in Box: {{currentPos}} [{{currentLine}}][{{currentCol}}]
-            </p>
+        <div>
+            <nav id="box-nav">
+                <button class="box-previous" v-on:click="changeBox(-1)">
+                    <!-- Heroicon name: chevron-left -->
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div class="box-number"> Box {{currentBox + 1}}</div>
+                <button class="box-next" v-on:click="changeBox(+1)">
+                    <!-- Heroicon name: chevron-right -->
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </nav>
             <ul id="box">
                 <li class="box-case" v-for="cp in getPokemonsInBox()" :style="boxCaseStyle()" :key="cp.id">
-                    <div class="box-case-content" :class="{active: cp.id == pokemon.id}">
+                    <div class="box-case-content" :class="{active: pokemon && cp.id == pokemon.id}">
                         <img v-if="cp.sprite" :src="cp.sprite" />
+                        <div class="pokename" v-else-if="!cp.sprite">{{cp.names[lang]}}</div>
                     </div>
                 </li>
             </ul>
-        </div>
-        <div v-else-if="pokemon == undefined">
-        No pokemon selected
         </div>
     </div>
 </template>
@@ -96,7 +104,13 @@ export default class Organizer extends Vue {
         this.currentLine = ~~(this.currentPos / this.nbCol)
         this.currentCol = this.currentPos - (this.nbCol * this.currentLine)
     }
-   
+
+    private changeBox(delta: number) {
+        if (delta < 0 && this.currentBox == 0)
+            return
+        this.currentBox = this.currentBox + delta
+    }
+
 }
 </script>
 
@@ -104,7 +118,22 @@ export default class Organizer extends Vue {
 
 #organizer {
     @apply flex-1 overflow-y-auto;
-    // @apply text-center;
+
+    nav#box-nav {
+        @apply flex my-1 px-1 h-10 items-center;
+        @apply bg-gray-300 rounded;
+
+        button.box-previous, button.box-next {
+            @apply flex-none h-10 w-20;
+            > svg {
+                @apply m-auto;
+            }
+        }
+
+        .box-number {
+            @apply flex-grow text-center;
+        }
+    }
 
     ul#box {
         @apply flex flex-wrap;
@@ -114,6 +143,7 @@ export default class Organizer extends Vue {
             @apply bg-white bg-opacity-50;
 
             > .box-case-content {
+                @apply flex flex-grow justify-center items-center;
                 @apply rounded;
                 @apply bg-white bg-opacity-50;
 
