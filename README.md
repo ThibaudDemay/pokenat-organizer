@@ -3,7 +3,7 @@
 This project is for all people with a little of psychorigidity with pokemon storage in pokemon games.
 You can preview how manage your storage by national pokedex by box.
 
-Demo : [Pokenat Organizer Demo](https://pokenat.zaxchi.fr)
+Demo : [Pokenat Organizer Demo](https://pokenat.demay.dev)
 
 ## Requirements
 
