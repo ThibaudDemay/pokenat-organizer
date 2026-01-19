@@ -22,4 +22,4 @@ license = {text = "MIT"}
 distribution = false
 
 [tool.pdm.scripts]
-update = "python3 pokenat.py --load"
+download_pokedex = "python3 pokenat.py --load"
