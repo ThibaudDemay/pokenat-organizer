@@ -48,6 +48,7 @@ this part is requiered if you want to use webui.
 how to use:
 ```
 foo@bar: <project> $ pdm run download_pokedex
+```
 
 ### Basic usage
 
