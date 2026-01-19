@@ -23,6 +23,10 @@ class LocalDataService {
     getPokedex() {
         return this.axios.get('/data.json')
     }
+
+    getPokedexes() {
+        return this.axios.get('/pokedexes.json')
+    }
 }
 
 export default new LocalDataService();

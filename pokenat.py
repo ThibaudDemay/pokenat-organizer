@@ -18,10 +18,12 @@ parser = argparse.ArgumentParser(allow_abbrev=False)
 
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument("--load", dest="load", action="store_true")
+group.add_argument("--load-pokedexes", dest="load_pokedexes", action="store_true")
 parser.add_argument("-f", "--force", dest="force", action="store_true")
 parser.add_argument("-d", "--datafile", type=str, default="./data.json")
 parser.add_argument("-i", "--indexfile", type=str, default="./index.json")
 parser.add_argument("-g", "--langfile", type=str, default="./lang.json")
+parser.add_argument("-p", "--pokedexfile", type=str, default="./pokedexes.json")
 parser.add_argument(
     "-n", "--language", action="store", dest="language", type=str, nargs="*", default=["en", "fr"],
 )
@@ -97,7 +99,46 @@ class PokemonSpeciesSerializer(json.JSONEncoder):
             return data
 
 
+class PokedexSerializer(json.JSONEncoder):
+    def default(self, obj):
+        global lang_wanted
+        if isinstance(obj, pokebase.APIResource) and obj.endpoint == "pokedex":
+            data = dict()
+            data["id"] = obj.id
+            data["name"] = obj.name
+            data["names"] = dict()
+            for name in obj.names:
+                if name.language.name in lang_wanted:
+                    data["names"][name.language.name] = name.name
+            data["region"] = obj.region.name if obj.region else None
+            data["count"] = len(obj.pokemon_entries)
+            return data
+
+
 # CORE ########################################################################
+
+
+def prepare_pokedexes():
+    """Fetch all pokedex metadata from PokeAPI."""
+    global lang_wanted
+    d_pokedexes = {}
+
+    # Get list of all pokedexes
+    print("+ Fetching pokedex list...")
+    pokedex_list = pokebase.APIResourceList("pokedex")
+    total = len(pokedex_list)
+
+    print("+ Process %d pokedexes:" % total)
+    printProgressBar(0, total, prefix=" Progress:", suffix="Complete", length=50)
+
+    for i, entry in enumerate(pokedex_list):
+        # entry is a dict with 'name' and 'url' keys
+        pokedex_name = entry["name"]
+        pokedex = pokebase.pokedex(pokedex_name)
+        d_pokedexes[pokedex.name] = json.loads(PokedexSerializer().encode(pokedex))
+        printProgressBar(i + 1, total, prefix=" Progress:", suffix="Complete", length=50)
+
+    return d_pokedexes
 
 
 def prepare(c_data, force=False):
@@ -178,9 +219,15 @@ if __name__ == "__main__":
 
     if args.load:
         data, index = prepare(data, args.force)
+        pokedexes = prepare_pokedexes()
         save_json_file(args.datafile, data)
         save_json_file(args.indexfile, index)
         save_json_file(args.langfile, lang_wanted)
+        save_json_file(args.pokedexfile, pokedexes)
+    elif args.load_pokedexes:
+        pokedexes = prepare_pokedexes()
+        save_json_file(args.pokedexfile, pokedexes)
+        print("Pokedexes saved to %s" % args.pokedexfile)
     else:
 
         if args.id:

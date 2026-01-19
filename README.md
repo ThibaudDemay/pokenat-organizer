@@ -87,6 +87,18 @@ Box: 7, line: 5, column: 5
 
 ## Webui
 
+You need to run python cli with --load option before use webui.
+Then you need to copy retrieved files in frontend/public/api
+
+```console
+foo@bar:<project>/frontend $ cp ../data.json ./public/api/data.json
+foo@bar:<project>/frontend $ cp ../index.json ./public/api/index.json
+foo@bar:<project>/frontend $ cp ../lang.json ./public/api/lang.json
+```
+
+After that you can run webui with:
+
 ```console
 foo@bar:<project>/frontend $ yarn serve
 ```
+
