@@ -1,11 +1,11 @@
 <template>
     <div id="organizer">
         <div class="pokemon-tooltip" v-if="hoveredPokemon" :style="tooltipStyle">
-            {{ hoveredPokemon.names[lang] }} #{{ hoveredPokemon.pokedex[selectedPokedex] }}
+            {{ hoveredPokemon.names[locale] }} #{{ hoveredPokemon.pokedex[selectedPokedex] }}
         </div>
         <div>
             <nav id="box-nav">
-                <button class="box-previous" @click="changeBox(-1)" :disabled="currentBox === 0" aria-label="Box précédente">
+                <button class="box-previous" @click="changeBox(-1)" :disabled="currentBox === 0" :aria-label="t('organizer.previousBox')">
                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
                     </svg>
@@ -26,7 +26,7 @@
                         </button>
                     </div>
                 </div>
-                <button class="box-next" @click="changeBox(+1)" :disabled="currentBox >= totalBoxes - 1" aria-label="Box suivante">
+                <button class="box-next" @click="changeBox(+1)" :disabled="currentBox >= totalBoxes - 1" :aria-label="t('organizer.nextBox')">
                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                     </svg>
@@ -47,13 +47,13 @@
                             <div v-if="!loadedImages.has(cp.id)" class="sprite-placeholder"></div>
                             <img
                                 :src="cp.sprite"
-                                :alt="cp.names[lang]"
+                                :alt="cp.names[locale]"
                                 :class="{ loaded: loadedImages.has(cp.id) }"
                                 loading="lazy"
                                 @load="onImageLoad(cp.id)"
                             />
                         </div>
-                        <div class="pokename" v-else>{{ cp.names[lang] }}</div>
+                        <div class="pokename" v-else>{{ cp.names[locale] }}</div>
                     </div>
                 </li>
             </ul>
@@ -63,19 +63,20 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Pokemon } from '@/models/pokemon.model';
 
 const props = defineProps<{
     pokemon: Pokemon | null;
     pokedex: Pokemon[];
     selectedPokedex: string;
-    lang: string;
 }>();
 
 const emit = defineEmits<{
     'select-pokemon': [pokemon: Pokemon];
 }>();
 
+const { t, locale } = useI18n();
 const currentBox = ref(0);
 const hoveredPokemon = ref<Pokemon | null>(null);
 const tooltipPosition = ref({ x: 0, y: 0 });

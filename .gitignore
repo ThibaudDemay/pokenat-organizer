@@ -1,6 +1,7 @@
 
 *.json
-!pokenat-organizer-frontend/*.json
+!pokenat-organizer-frontend/**/*.json
+pokenat-organizer-frontend/public/api/*.json
 
 node_modules/
 

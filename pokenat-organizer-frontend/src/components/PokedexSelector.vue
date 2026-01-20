@@ -18,7 +18,7 @@
                     :class="{ active: dex.name === selectedPokedex }"
                     @click="selectPokedex(dex.name)"
                 >
-                    {{ dex.names[lang] || dex.names['en'] || dex.name }}
+                    {{ dex.names[locale] || dex.name }}
                     <span class="count">({{ dex.count }})</span>
                 </li>
             </ul>
@@ -28,13 +28,15 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { PokedexInfo } from '@/models/pokemon.model';
 
 const props = defineProps<{
     pokedexes: Record<string, PokedexInfo>;
     selectedPokedex: string;
-    lang: string;
 }>();
+
+const { locale } = useI18n();
 
 const emit = defineEmits<{
     'select-pokedex': [pokedex: string];
@@ -56,7 +58,7 @@ const sortedPokedexes = computed(() => {
 const selectedPokedexName = computed(() => {
     const dex = props.pokedexes[props.selectedPokedex];
     if (!dex) return props.selectedPokedex;
-    return dex.names[props.lang] || dex.names['en'] || dex.name;
+    return dex.names[locale.value] || dex.names['en'] || dex.name;
 });
 
 function toggleDropdown() {

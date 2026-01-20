@@ -2,13 +2,13 @@
   <div id="container">
     <Header
       :languages="languages"
-      :selectedLanguage="selectedLanguage"
+      :selectedLanguage="locale"
       @select-language="selectLanguage"
     />
 
     <template v-if="loading">
       <div class="flex-1 flex items-center justify-center">
-        <span class="text-gray-500">Chargement du Pokédex...</span>
+        <span class="text-gray-500">{{ t('app.loadingPokedex') }}</span>
       </div>
     </template>
 
@@ -16,7 +16,7 @@
       <div class="flex-1 flex flex-col items-center justify-center gap-4">
         <span class="text-red-500">{{ error }}</span>
         <button @click="loadData" class="px-4 py-2 bg-red-600 text-white rounded">
-          Réessayer
+          {{ t('common.retry') }}
         </button>
       </div>
     </template>
@@ -27,21 +27,18 @@
           <PokedexSelector
             :pokedexes="pokedexes"
             :selectedPokedex="selectedPokedex"
-            :lang="selectedLanguage"
             @select-pokedex="selectPokedex"
           />
           <SearchBar
             :index="searchIndex"
             :pokedex="filteredPokedex"
             :selectedPokedex="selectedPokedex"
-            :lang="selectedLanguage"
             @select-pokemon="selectPokemon"
           />
           <Organizer
             :pokemon="selectedPokemon"
             :pokedex="filteredPokedex"
             :selectedPokedex="selectedPokedex"
-            :lang="selectedLanguage"
             @select-pokemon="selectPokemon"
           />
         </div>
@@ -49,7 +46,6 @@
           <PokemonDetails
             :pokemon="selectedPokemon"
             :selectedPokedex="selectedPokedex"
-            :lang="selectedLanguage"
             :versionGroups="versionGroups"
           />
         </aside>
@@ -60,36 +56,30 @@
         <PokemonDetails
           :pokemon="selectedPokemon"
           :selectedPokedex="selectedPokedex"
-          :lang="selectedLanguage"
           :versionGroups="versionGroups"
         />
       </MobileDrawer>
     </template>
 
-    <footer>
-      <span>Data provided by <a href="https://pokeapi.co/" target="_blank" rel="noopener">PokéAPI</a></span>
-      <span class="separator">•</span>
-      <a href="https://github.com/thibauddemay/pokenat-organizer" target="_blank" rel="noopener">
-        <svg class="inline-block w-4 h-4 mr-1" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-        </svg>
-        GitHub
-      </a>
-    </footer>
+    <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Pokemon, PokedexInfo, VersionGroup } from '@/models/pokemon.model';
 import LocalDataService from '@/services/LocalData.service';
 import Analytics from '@/services/Analytics.service';
 import Header from '@/components/Header.vue';
+import Footer from '@/components/Footer.vue';
 import PokedexSelector from '@/components/PokedexSelector.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import Organizer from '@/components/Organizer.vue';
 import PokemonDetails from '@/components/PokemonDetails.vue';
 import MobileDrawer from '@/components/MobileDrawer.vue';
+
+const { t, locale } = useI18n();
 
 interface SearchIndexEntry {
   id: string;
@@ -101,7 +91,6 @@ const searchIndex = ref<SearchIndexEntry[]>([]);
 const pokedex = ref<Pokemon[]>([]);
 const pokedexes = ref<Record<string, PokedexInfo>>({});
 const versionGroups = ref<Record<string, VersionGroup>>({});
-const selectedLanguage = ref('en');
 const selectedPokedex = ref('national');
 const selectedPokemon = ref<Pokemon | null>(null);
 const loading = ref(true);
@@ -122,10 +111,6 @@ const filteredPokedex = computed(() => {
 });
 
 function initPreferences() {
-  const savedLang = localStorage.getItem('language');
-  if (savedLang) {
-    selectedLanguage.value = savedLang;
-  }
   const savedPokedex = localStorage.getItem('pokedex');
   if (savedPokedex) {
     selectedPokedex.value = savedPokedex;
@@ -160,7 +145,7 @@ async function loadData() {
     versionGroups.value = versionGroupsResponse.data;
 
   } catch (e) {
-    error.value = 'Impossible de charger les données. Vérifiez votre connexion.';
+    error.value = t('app.loadError');
     console.error('Failed to load data:', e);
   } finally {
     loading.value = false;
@@ -169,7 +154,7 @@ async function loadData() {
 
 function selectLanguage(lang: string) {
   localStorage.setItem('language', lang);
-  selectedLanguage.value = lang;
+  locale.value = lang;
   Analytics.trackLanguageChange(lang);
 }
 
@@ -191,6 +176,7 @@ function selectPokemon(pokemon: Pokemon) {
 
 function closeMobileDrawer() {
   isMobileDrawerOpen.value = false;
+  selectedPokemon.value = null;
 }
 
 onMounted(() => {

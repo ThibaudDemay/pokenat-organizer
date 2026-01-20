@@ -1,0 +1,65 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "retry": "Réessayer"
+  },
+  "types": {
+    "normal": "Normal",
+    "fire": "Feu",
+    "water": "Eau",
+    "electric": "Électrik",
+    "grass": "Plante",
+    "ice": "Glace",
+    "fighting": "Combat",
+    "poison": "Poison",
+    "ground": "Sol",
+    "flying": "Vol",
+    "psychic": "Psy",
+    "bug": "Insecte",
+    "rock": "Roche",
+    "ghost": "Spectre",
+    "dragon": "Dragon",
+    "dark": "Ténèbres",
+    "steel": "Acier",
+    "fairy": "Fée"
+  },
+  "app": {
+    "loadingPokedex": "Chargement du Pokédex...",
+    "loadError": "Impossible de charger les données. Vérifiez votre connexion."
+  },
+  "header": {
+    "lightMode": "Mode clair",
+    "darkMode": "Mode sombre"
+  },
+  "footer": {
+    "dataProvidedBy": "Données fournies par",
+    "viewOnGitHub": "Voir sur GitHub"
+  },
+  "search": {
+    "placeholder": "Rechercher un Pokémon...",
+    "clearSearch": "Effacer la recherche",
+    "resultsCount": "{count} résultats. Affinez votre recherche."
+  },
+  "organizer": {
+    "previousBox": "Box précédente",
+    "nextBox": "Box suivante"
+  },
+  "pokemon": {
+    "selectPokemon": "Sélectionnez un Pokémon",
+    "legendary": "Légendaire",
+    "mythical": "Fabuleux",
+    "height": "Taille",
+    "weight": "Poids",
+    "generation": "Gén.",
+    "games": "Jeux",
+    "whereToCatch": "Où capturer"
+  },
+  "stats": {
+    "hp": "PV",
+    "attack": "Attaque",
+    "defense": "Défense",
+    "specialAttack": "Att. Spé",
+    "specialDefense": "Déf. Spé",
+    "speed": "Vitesse"
+  }
+}

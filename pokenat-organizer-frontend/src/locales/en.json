@@ -1,0 +1,65 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "retry": "Retry"
+  },
+  "types": {
+    "normal": "Normal",
+    "fire": "Fire",
+    "water": "Water",
+    "electric": "Electric",
+    "grass": "Grass",
+    "ice": "Ice",
+    "fighting": "Fighting",
+    "poison": "Poison",
+    "ground": "Ground",
+    "flying": "Flying",
+    "psychic": "Psychic",
+    "bug": "Bug",
+    "rock": "Rock",
+    "ghost": "Ghost",
+    "dragon": "Dragon",
+    "dark": "Dark",
+    "steel": "Steel",
+    "fairy": "Fairy"
+  },
+  "app": {
+    "loadingPokedex": "Loading Pokédex...",
+    "loadError": "Unable to load data. Please check your connection."
+  },
+  "header": {
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode"
+  },
+  "footer": {
+    "dataProvidedBy": "Data provided by",
+    "viewOnGitHub": "View on GitHub"
+  },
+  "search": {
+    "placeholder": "Search for a Pokémon...",
+    "clearSearch": "Clear search",
+    "resultsCount": "{count} results. Please refine your search."
+  },
+  "organizer": {
+    "previousBox": "Previous box",
+    "nextBox": "Next box"
+  },
+  "pokemon": {
+    "selectPokemon": "Select a Pokémon",
+    "legendary": "Legendary",
+    "mythical": "Mythical",
+    "height": "Height",
+    "weight": "Weight",
+    "generation": "Gen.",
+    "games": "Games",
+    "whereToCatch": "Where to catch"
+  },
+  "stats": {
+    "hp": "HP",
+    "attack": "Attack",
+    "defense": "Defense",
+    "specialAttack": "Sp. Atk",
+    "specialDefense": "Sp. Def",
+    "speed": "Speed"
+  }
+}

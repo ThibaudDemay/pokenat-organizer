@@ -3,19 +3,19 @@
         <!-- Header: Image + Infos côte à côte -->
         <div class="header-row">
             <div class="sprite-container">
-                <img :src="pokemon.sprite" :alt="pokemon.names[lang]" />
+                <img :src="pokemon.sprite" :alt="pokemon.names[locale]" />
             </div>
             <div class="info">
-                <h2 class="name">{{ capitalize(pokemon.names[lang]) }}</h2>
+                <h2 class="name">{{ capitalize(pokemon.names[locale]) }}</h2>
                 <span class="number">{{ formatDexName(selectedPokedex) }} #{{ pokemon.pokedex[selectedPokedex].toString().padStart(4, '0') }}</span>
 
                 <!-- Badges légendaire/fabuleux -->
                 <div class="badges" v-if="details">
                     <span v-if="details.isLegendary" class="badge legendary">
-                        {{ lang === 'fr' ? 'Légendaire' : 'Legendary' }}
+                        {{ t('pokemon.legendary') }}
                     </span>
                     <span v-if="details.isMythical" class="badge mythical">
-                        {{ lang === 'fr' ? 'Fabuleux' : 'Mythical' }}
+                        {{ t('pokemon.mythical') }}
                     </span>
                 </div>
 
@@ -27,29 +27,29 @@
                         class="type-badge"
                         :class="type"
                     >
-                        {{ getTypeName(type) }}
+                        {{ t(`types.${type}`) }}
                     </span>
                 </div>
 
                 <!-- Infos physiques intégrées -->
                 <div class="physical-info" v-if="details">
                     <div class="info-item">
-                        <span class="label">{{ lang === 'fr' ? 'Taille' : 'Height' }}</span>
+                        <span class="label">{{ t('pokemon.height') }}</span>
                         <span class="value">{{ formatHeight(details.height) }}</span>
                     </div>
                     <div class="info-item">
-                        <span class="label">{{ lang === 'fr' ? 'Poids' : 'Weight' }}</span>
+                        <span class="label">{{ t('pokemon.weight') }}</span>
                         <span class="value">{{ formatWeight(details.weight) }}</span>
                     </div>
                     <div class="info-item">
-                        <span class="label">{{ lang === 'fr' ? 'Gén.' : 'Gen.' }}</span>
+                        <span class="label">{{ t('pokemon.generation') }}</span>
                         <span class="value">{{ formatGeneration(details.generation) }}</span>
                     </div>
                 </div>
 
                 <!-- Chargement des détails -->
                 <div class="loading" v-if="loading">
-                    <span>{{ lang === 'fr' ? 'Chargement...' : 'Loading...' }}</span>
+                    <span>{{ t('common.loading') }}</span>
                 </div>
             </div>
         </div>
@@ -58,19 +58,19 @@
         <div class="stats-section" v-if="details">
             <h3>Stats</h3>
             <div class="stats-grid">
-                <div class="stat-row" v-for="(value, name) in statsList" :key="name">
-                    <span class="stat-name">{{ getStatLabel(name) }}</span>
+                <div class="stat-row" v-for="(statValue, statName) in statsList" :key="statName">
+                    <span class="stat-name">{{ t(`stats.${statName}`) }}</span>
                     <div class="stat-bar-container">
-                        <div class="stat-bar" :style="{ width: `${(value / 255) * 100}%` }"></div>
+                        <div class="stat-bar" :style="{ width: `${(statValue / 255) * 100}%` }"></div>
                     </div>
-                    <span class="stat-value">{{ value }}</span>
+                    <span class="stat-value">{{ statValue }}</span>
                 </div>
             </div>
         </div>
 
         <!-- Jeux disponibles -->
         <div class="games-section" v-if="availableGames.length > 0">
-            <h3>{{ lang === 'fr' ? 'Jeux' : 'Games' }} ({{ availableGames.length }})</h3>
+            <h3>{{ t('pokemon.games') }} ({{ availableGames.length }})</h3>
             <div class="games-list">
                 <span v-for="game in availableGames" :key="game" class="game-tag">
                     {{ game }}
@@ -87,7 +87,7 @@
                 :aria-expanded="isEncountersOpen"
                 aria-controls="encounters-content"
             >
-                <span>{{ lang === 'fr' ? 'Où capturer' : 'Where to catch' }} ({{ loadingEncounters ? '...' : encountersByVersion.length }})</span>
+                <span>{{ t('pokemon.whereToCatch') }} ({{ loadingEncounters ? '...' : encountersByVersion.length }})</span>
                 <svg
                     class="chevron"
                     :class="{ open: isEncountersOpen }"
@@ -140,12 +140,13 @@
         </div>
     </div>
     <div id="pokemon-details" class="empty" v-else>
-        <p>{{ lang === 'fr' ? 'Sélectionnez un Pokémon' : 'Select a Pokémon' }}</p>
+        <p>{{ t('pokemon.selectPokemon') }}</p>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Pokemon, VersionGroup } from '@/models/pokemon.model';
 import PokeapiDataService, { type PokemonDetails, type PokemonEncounter } from '@/services/PokeapiData.service';
 import Analytics from '@/services/Analytics.service';
@@ -153,35 +154,10 @@ import Analytics from '@/services/Analytics.service';
 const props = defineProps<{
     pokemon: Pokemon | null;
     selectedPokedex: string;
-    lang: string;
     versionGroups: Record<string, VersionGroup>;
 }>();
 
-// Traductions des types
-const typeNames: Record<string, Record<string, string>> = {
-    normal: { en: 'Normal', fr: 'Normal' },
-    fire: { en: 'Fire', fr: 'Feu' },
-    water: { en: 'Water', fr: 'Eau' },
-    electric: { en: 'Electric', fr: 'Électrik' },
-    grass: { en: 'Grass', fr: 'Plante' },
-    ice: { en: 'Ice', fr: 'Glace' },
-    fighting: { en: 'Fighting', fr: 'Combat' },
-    poison: { en: 'Poison', fr: 'Poison' },
-    ground: { en: 'Ground', fr: 'Sol' },
-    flying: { en: 'Flying', fr: 'Vol' },
-    psychic: { en: 'Psychic', fr: 'Psy' },
-    bug: { en: 'Bug', fr: 'Insecte' },
-    rock: { en: 'Rock', fr: 'Roche' },
-    ghost: { en: 'Ghost', fr: 'Spectre' },
-    dragon: { en: 'Dragon', fr: 'Dragon' },
-    dark: { en: 'Dark', fr: 'Ténèbres' },
-    steel: { en: 'Steel', fr: 'Acier' },
-    fairy: { en: 'Fairy', fr: 'Fée' },
-};
-
-function getTypeName(type: string): string {
-    return typeNames[type]?.[props.lang] || type;
-}
+const { t, locale } = useI18n();
 
 const isPokedexOpen = ref(false);
 const isEncountersOpen = ref(false);
@@ -201,7 +177,7 @@ function getGamesForPokedex(pokedexName: string): string[] {
     for (const vg of Object.values(props.versionGroups)) {
         if (vg.pokedexes.includes(pokedexName)) {
             for (const version of vg.versions) {
-                const gameName = version.names[props.lang] || version.names['en'] || version.name;
+                const gameName = version.names[locale.value] || version.names['en'] || version.name;
                 games.push(gameName);
             }
         }
@@ -290,29 +266,8 @@ function getVersionOrder(versionName: string): number {
 
 const statsList = computed(() => {
     if (!details.value) return {};
-    return {
-        'hp': details.value.stats.hp,
-        'attack': details.value.stats.attack,
-        'defense': details.value.stats.defense,
-        'specialAttack': details.value.stats.specialAttack,
-        'specialDefense': details.value.stats.specialDefense,
-        'speed': details.value.stats.speed,
-    };
+    return details.value.stats;
 });
-
-// Traduction des labels des stats
-const statLabels: Record<string, Record<string, string>> = {
-    hp: { en: 'HP', fr: 'PV' },
-    attack: { en: 'Attack', fr: 'Attaque' },
-    defense: { en: 'Defense', fr: 'Défense' },
-    specialAttack: { en: 'Sp. Atk', fr: 'Att. Spé' },
-    specialDefense: { en: 'Sp. Def', fr: 'Déf. Spé' },
-    speed: { en: 'Speed', fr: 'Vitesse' },
-};
-
-function getStatLabel(statKey: string): string {
-    return statLabels[statKey]?.[props.lang] || statKey;
-}
 
 async function loadDetails(pokemonId: number) {
     loading.value = true;
@@ -359,7 +314,7 @@ function getVersionName(versionName: string): string {
     for (const vg of Object.values(props.versionGroups)) {
         for (const version of vg.versions) {
             if (version.name === versionName) {
-                return version.names[props.lang] || version.names['en'] || versionName;
+                return version.names[locale.value] || version.names['en'] || versionName;
             }
         }
     }

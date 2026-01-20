@@ -12,7 +12,7 @@
                 v-if="searchQuery"
                 class="clear-btn"
                 @click="clearSearch"
-                aria-label="Effacer la recherche"
+                :aria-label="t('search.clearSearch')"
             >
                 ×
             </button>
@@ -20,7 +20,7 @@
         <div id="search-result" v-show="showResults">
             <ul>
                 <li v-if="searchResults.length >= maxResults" class="info">
-                    {{ searchResults.length }} résultats. Affinez votre recherche.
+                    {{ t('search.resultsCount', { count: searchResults.length }) }}
                 </li>
                 <template v-else>
                     <li
@@ -29,8 +29,8 @@
                         class="pokemon"
                         @click="handleSelectPokemon(pokemon)"
                     >
-                        <img class="sprite" :src="pokemon.sprite" :alt="pokemon.names[lang]" />
-                        <span class="name">{{ pokemon.names[lang] }}</span>
+                        <img class="sprite" :src="pokemon.sprite" :alt="pokemon.names[locale]" />
+                        <span class="name">{{ pokemon.names[locale] }}</span>
                         <span class="number">#{{ pokemon.pokedex[selectedPokedex] }}</span>
                     </li>
                 </template>
@@ -41,6 +41,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Pokemon } from '@/models/pokemon.model';
 import Analytics from '@/services/Analytics.service';
 
@@ -54,7 +55,6 @@ const props = withDefaults(defineProps<{
     pokedex: Pokemon[];
     selectedPokedex: string;
     maxResults?: number;
-    lang: string;
 }>(), {
     index: () => [],
     pokedex: () => [],
@@ -66,13 +66,12 @@ const emit = defineEmits<{
     'select-pokemon': [pokemon: Pokemon];
 }>();
 
+const { t, locale } = useI18n();
 const searchQuery = ref('');
 const isInputFocused = ref(false);
 const searchBarRef = ref<HTMLElement | null>(null);
 
-const placeholder = computed(() =>
-    props.lang === 'fr' ? 'Rechercher un Pokémon...' : 'Search Pokémon...'
-);
+const placeholder = computed(() => t('search.placeholder'));
 
 const showResults = computed(() =>
     searchQuery.value.length > 0 && searchResults.value.length > 0 && isInputFocused.value
