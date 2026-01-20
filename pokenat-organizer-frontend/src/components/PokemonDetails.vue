@@ -148,7 +148,7 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Pokemon, VersionGroup, PokedexInfo, LocationArea } from '@/models/pokemon.model';
-import PokeapiDataService, { type PokemonDetails, type PokemonEncounter } from '@/services/PokeapiData.service';
+import PokeapiDataService, { PokemonDetailsStats, type PokemonDetails, type PokemonEncounter } from '@/services/PokeapiData.service';
 import Analytics from '@/services/Analytics.service';
 
 const props = defineProps<{
@@ -266,7 +266,7 @@ function getVersionOrder(versionName: string): number {
     return 999;
 }
 
-const statsList = computed(() => {
+const statsList = computed<PokemonDetailsStats | Record<string, never>>(() => {
     if (!details.value) return {};
     return details.value.stats;
 });

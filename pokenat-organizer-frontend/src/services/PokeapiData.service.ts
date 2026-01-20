@@ -57,18 +57,20 @@ export interface PokemonEncounter {
 }
 
 // Données enrichies combinées
+export interface PokemonDetailsStats {
+    hp: number;
+    attack: number;
+    defense: number;
+    specialAttack: number;
+    specialDefense: number;
+    speed: number;
+}
+
 export interface PokemonDetails {
     types: string[];
     height: number; // en décimètres
     weight: number; // en hectogrammes
-    stats: {
-        hp: number;
-        attack: number;
-        defense: number;
-        specialAttack: number;
-        specialDefense: number;
-        speed: number;
-    };
+    stats: PokemonDetailsStats;
     abilities: { name: string; isHidden: boolean }[];
     generation: string;
     isLegendary: boolean;

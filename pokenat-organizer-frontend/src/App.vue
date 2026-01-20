@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Pokemon, PokedexInfo, VersionGroup, LocationArea } from '@/models/pokemon.model';
 import LocalDataService from '@/services/LocalData.service';
@@ -142,7 +142,7 @@ async function loadData() {
       ([name, id]) => ({ id: id as string, name })
     );
 
-    pokedex.value = Object.values(pokedexResponse.data).map(p => ({
+    pokedex.value = Object.values(pokedexResponse.data as Record<string, Pokemon>).map(p => ({
       ...p,
       id: Number(p.id)
     }));
