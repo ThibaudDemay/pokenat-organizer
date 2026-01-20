@@ -40,8 +40,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import type { Pokemon } from '@/models/pokemon.model';
+import Analytics from '@/services/Analytics.service';
 
 interface SearchIndexEntry {
     id: string;
@@ -118,8 +119,20 @@ onMounted(() => {
     document.addEventListener('click', handleClickOutside);
 });
 
+// Track search avec debounce
+let searchTimeout: ReturnType<typeof setTimeout> | undefined;
+watch(searchQuery, (query) => {
+    clearTimeout(searchTimeout);
+    if (query.length >= 2) {
+        searchTimeout = setTimeout(() => {
+            Analytics.trackPokemonSearch(query, searchResults.value.length);
+        }, 1000);
+    }
+});
+
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
+    clearTimeout(searchTimeout);
 });
 </script>
 

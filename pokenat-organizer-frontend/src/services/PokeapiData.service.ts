@@ -33,6 +33,29 @@ export interface PokemonSpeciesApiResponse {
     evolves_from_species: { name: string; url: string } | null;
 }
 
+export interface EncounterApiResponse {
+    location_area: {
+        name: string;
+        url: string;
+    };
+    version_details: {
+        max_chance: number;
+        encounter_details: {
+            chance: number;
+            condition_values: { name: string; url: string }[];
+            max_level: number;
+            min_level: number;
+            method: { name: string; url: string };
+        }[];
+        version: { name: string; url: string };
+    }[];
+}
+
+export interface PokemonEncounter {
+    locationArea: string;
+    versions: string[];
+}
+
 // Données enrichies combinées
 export interface PokemonDetails {
     types: string[];
@@ -57,6 +80,8 @@ export interface PokemonDetails {
 
 class PokeapiDataService {
     axios: AxiosInstance;
+    private detailsCache: Map<number, PokemonDetails> = new Map();
+    private encountersCache: Map<number, PokemonEncounter[]> = new Map();
 
     constructor() {
         this.axios = axios.create({
@@ -79,7 +104,39 @@ class PokeapiDataService {
         return this.axios.get<PokemonSpeciesApiResponse>(`/pokemon-species/${id}`)
     }
 
+    getPokemonEncounters(id: number) {
+        return this.axios.get<EncounterApiResponse[]>(`/pokemon/${id}/encounters`)
+    }
+
+    async getEncounters(id: number): Promise<PokemonEncounter[]> {
+        // Vérifier le cache
+        const cached = this.encountersCache.get(id);
+        if (cached) return cached;
+
+        const response = await this.getPokemonEncounters(id);
+        const encounters: PokemonEncounter[] = [];
+
+        for (const encounter of response.data) {
+            const versions = new Set<string>();
+            for (const vd of encounter.version_details) {
+                versions.add(vd.version.name);
+            }
+            encounters.push({
+                locationArea: encounter.location_area.name,
+                versions: Array.from(versions)
+            });
+        }
+
+        // Stocker en cache
+        this.encountersCache.set(id, encounters);
+        return encounters;
+    }
+
     async getPokemonDetails(id: number): Promise<PokemonDetails> {
+        // Vérifier le cache
+        const cached = this.detailsCache.get(id);
+        if (cached) return cached;
+
         const [pokemonRes, speciesRes] = await Promise.all([
             this.getPokemon(id),
             this.getPokemonSpecies(id)
@@ -94,7 +151,7 @@ class PokeapiDataService {
             statsMap[stat.stat.name] = stat.base_stat;
         }
 
-        return {
+        const details: PokemonDetails = {
             types: pokemon.types.map(t => t.type.name),
             height: pokemon.height,
             weight: pokemon.weight,
@@ -117,6 +174,10 @@ class PokeapiDataService {
             habitat: species.habitat?.name || null,
             evolvesFrom: species.evolves_from_species?.name || null,
         };
+
+        // Stocker en cache
+        this.detailsCache.set(id, details);
+        return details;
     }
 }
 

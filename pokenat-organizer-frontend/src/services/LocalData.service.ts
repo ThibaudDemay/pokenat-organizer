@@ -27,6 +27,10 @@ class LocalDataService {
     getPokedexes() {
         return this.axios.get('/pokedexes.json')
     }
+
+    getVersionGroups() {
+        return this.axios.get('/version-groups.json')
+    }
 }
 
 export default new LocalDataService();

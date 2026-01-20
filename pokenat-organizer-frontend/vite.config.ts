@@ -11,7 +11,8 @@ export default defineConfig({
       manifest: {
         name: 'Pokenat Organizer',
         short_name: 'Pokenat',
-        theme_color: '#dc2626',
+        theme_color: '#111827',
+        background_color: '#111827',
         icons: [
           {
             src: '/img/icons/android-chrome-192x192.png',

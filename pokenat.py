@@ -19,11 +19,13 @@ parser = argparse.ArgumentParser(allow_abbrev=False)
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument("--load", dest="load", action="store_true")
 group.add_argument("--load-pokedexes", dest="load_pokedexes", action="store_true")
+group.add_argument("--load-version-groups", dest="load_version_groups", action="store_true")
 parser.add_argument("-f", "--force", dest="force", action="store_true")
 parser.add_argument("-d", "--datafile", type=str, default="./data.json")
 parser.add_argument("-i", "--indexfile", type=str, default="./index.json")
 parser.add_argument("-g", "--langfile", type=str, default="./lang.json")
 parser.add_argument("-p", "--pokedexfile", type=str, default="./pokedexes.json")
+parser.add_argument("-v", "--versiongroupsfile", type=str, default="./version-groups.json")
 parser.add_argument(
     "-n", "--language", action="store", dest="language", type=str, nargs="*", default=["en", "fr"],
 )
@@ -115,6 +117,31 @@ class PokedexSerializer(json.JSONEncoder):
             return data
 
 
+class VersionGroupSerializer(json.JSONEncoder):
+    def default(self, obj):
+        global lang_wanted
+        if isinstance(obj, pokebase.APIResource) and obj.endpoint == "version-group":
+            data = dict()
+            data["id"] = obj.id
+            data["name"] = obj.name
+            data["order"] = obj.order
+            data["generation"] = obj.generation.name if obj.generation else None
+            data["regions"] = [region.name for region in obj.regions] if obj.regions else []
+            data["pokedexes"] = [pokedex.name for pokedex in obj.pokedexes] if obj.pokedexes else []
+            # Get version names with translations
+            data["versions"] = []
+            for version in obj.versions:
+                version_data = {
+                    "name": version.name,
+                    "names": {}
+                }
+                for name in version.names:
+                    if name.language.name in lang_wanted:
+                        version_data["names"][name.language.name] = name.name
+                data["versions"].append(version_data)
+            return data
+
+
 # CORE ########################################################################
 
 
@@ -139,6 +166,28 @@ def prepare_pokedexes():
         printProgressBar(i + 1, total, prefix=" Progress:", suffix="Complete", length=50)
 
     return d_pokedexes
+
+
+def prepare_version_groups():
+    """Fetch all version groups metadata from PokeAPI."""
+    global lang_wanted
+    d_version_groups = {}
+
+    # Get list of all version groups
+    print("+ Fetching version group list...")
+    vg_list = pokebase.APIResourceList("version-group")
+    total = len(vg_list)
+
+    print("+ Process %d version groups:" % total)
+    printProgressBar(0, total, prefix=" Progress:", suffix="Complete", length=50)
+
+    for i, entry in enumerate(vg_list):
+        vg_name = entry["name"]
+        vg = pokebase.version_group(vg_name)
+        d_version_groups[vg.name] = json.loads(VersionGroupSerializer().encode(vg))
+        printProgressBar(i + 1, total, prefix=" Progress:", suffix="Complete", length=50)
+
+    return d_version_groups
 
 
 def prepare(c_data, force=False):
@@ -228,6 +277,10 @@ if __name__ == "__main__":
         pokedexes = prepare_pokedexes()
         save_json_file(args.pokedexfile, pokedexes)
         print("Pokedexes saved to %s" % args.pokedexfile)
+    elif args.load_version_groups:
+        version_groups = prepare_version_groups()
+        save_json_file(args.versiongroupsfile, version_groups)
+        print("Version groups saved to %s" % args.versiongroupsfile)
     else:
 
         if args.id:

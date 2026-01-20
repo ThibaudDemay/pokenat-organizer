@@ -95,6 +95,12 @@ foo@bar:<project>/frontend $ cp ../data.json ./public/api/data.json
 foo@bar:<project>/frontend $ cp ../index.json ./public/api/index.json
 foo@bar:<project>/frontend $ cp ../lang.json ./public/api/lang.json
 foo@bar:<project>/frontend $ cp ../pokedex.json ./public/api/pokedex.json
+foo@bar:<project>/frontend $ cp ../version-group.json ./public/api/version-group.json
+```
+
+```console
+foo@bar:<project>/frontend $ cp .env.example .env
+foo@bar:<project>/frontend $ nano .env
 ```
 
 After that you can run webui with:
@@ -105,8 +111,6 @@ foo@bar:<project>/frontend $ yarn dev
 
 ## Build
 
-
-
 To build frontend you can use:
 
 ```console
@@ -114,8 +118,20 @@ foo@bar:<project>/frontend $ cp ../data.json ./public/api/data.json
 foo@bar:<project>/frontend $ cp ../index.json ./public/api/index.json
 foo@bar:<project>/frontend $ cp ../lang.json ./public/api/lang.json
 foo@bar:<project>/frontend $ cp ../pokedex.json ./public/api/pokedex.json
+foo@bar:<project>/frontend $ cp ../version-group.json ./public/api/version-group.json
 foo@bar:<project>/frontend $ yarn build
 ```
 
 This will generate dist/ folder with all files to deploy.
 
+## Analytics
+
+This project use Matomo for analytics. 
+You can setup your own matomo server or use public one at [demo.matomo.org](https://demo.matomo.org/).
+You need to setup .env file in frontend/ folder with your matomo server url and site id.
+If you don't want to use analytics, just remove or comment these two lines in .env file:
+
+```
+VITE_MATOMO_URL=https://demo.matomo.org/
+VITE_MATOMO_SITE_ID=7
+```

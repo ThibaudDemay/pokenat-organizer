@@ -5,3 +5,5 @@
 node_modules/
 
 .vs_code/
+
+*.tar.gz

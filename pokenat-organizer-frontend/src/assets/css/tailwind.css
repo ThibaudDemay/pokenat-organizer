@@ -3,6 +3,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Safe area et couleurs de fond pour mobile */
+html, body {
+    background-color: #ffffff;
+    min-height: 100dvh;
+    margin: 0;
+    padding: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+    html, body {
+        background-color: #111827;
+    }
+}
+
 /* Force Tailwind to generate dark mode classes */
 .dark-mode-placeholder {
     @apply dark:bg-gray-900 dark:bg-gray-800 dark:bg-gray-700 dark:bg-gray-600 dark:bg-gray-500;

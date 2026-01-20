@@ -14,4 +14,19 @@ export interface PokedexInfo {
   count: number;
 }
 
+export interface GameVersion {
+  name: string;
+  names: Record<string, string>;
+}
+
+export interface VersionGroup {
+  id: number;
+  name: string;
+  order: number;
+  generation: string | null;
+  regions: string[];
+  pokedexes: string[];
+  versions: GameVersion[];
+}
+
 export default Pokemon;
