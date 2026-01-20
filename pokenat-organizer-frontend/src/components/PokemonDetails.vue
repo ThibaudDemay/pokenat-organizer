@@ -147,7 +147,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { Pokemon, VersionGroup } from '@/models/pokemon.model';
+import type { Pokemon, VersionGroup, PokedexInfo } from '@/models/pokemon.model';
 import PokeapiDataService, { type PokemonDetails, type PokemonEncounter } from '@/services/PokeapiData.service';
 import Analytics from '@/services/Analytics.service';
 
@@ -155,6 +155,7 @@ const props = defineProps<{
     pokemon: Pokemon | null;
     selectedPokedex: string;
     versionGroups: Record<string, VersionGroup>;
+    pokedexes: Record<string, PokedexInfo>;
 }>();
 
 const { t, locale } = useI18n();
@@ -336,6 +337,10 @@ watch(() => props.pokemon, (newPokemon) => {
 }, { immediate: true });
 
 function formatDexName(dex: string): string {
+    const pokedexInfo = props.pokedexes[dex];
+    if (pokedexInfo) {
+        return pokedexInfo.names[locale.value] || pokedexInfo.names['en'] || dex;
+    }
     return dex
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))

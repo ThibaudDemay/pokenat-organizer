@@ -47,6 +47,7 @@
             :pokemon="selectedPokemon"
             :selectedPokedex="selectedPokedex"
             :versionGroups="versionGroups"
+            :pokedexes="pokedexes"
           />
         </aside>
       </div>
@@ -57,6 +58,7 @@
           :pokemon="selectedPokemon"
           :selectedPokedex="selectedPokedex"
           :versionGroups="versionGroups"
+          :pokedexes="pokedexes"
         />
       </MobileDrawer>
     </template>
