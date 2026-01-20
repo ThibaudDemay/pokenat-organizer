@@ -147,7 +147,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { Pokemon, VersionGroup, PokedexInfo } from '@/models/pokemon.model';
+import type { Pokemon, VersionGroup, PokedexInfo, LocationArea } from '@/models/pokemon.model';
 import PokeapiDataService, { type PokemonDetails, type PokemonEncounter } from '@/services/PokeapiData.service';
 import Analytics from '@/services/Analytics.service';
 
@@ -156,6 +156,7 @@ const props = defineProps<{
     selectedPokedex: string;
     versionGroups: Record<string, VersionGroup>;
     pokedexes: Record<string, PokedexInfo>;
+    locations: Record<string, LocationArea>;
 }>();
 
 const { t, locale } = useI18n();
@@ -303,6 +304,11 @@ function toggleEncounters() {
 }
 
 function formatLocationName(location: string): string {
+    const locationData = props.locations[location];
+    if (locationData) {
+        return locationData.names[locale.value] || locationData.names['en'] || location;
+    }
+    // Fallback: format the raw name
     return location
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))

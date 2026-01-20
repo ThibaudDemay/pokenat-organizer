@@ -29,4 +29,9 @@ export interface VersionGroup {
   versions: GameVersion[];
 }
 
+export interface LocationArea {
+  id: number;
+  names: Record<string, string>;
+}
+
 export default Pokemon;

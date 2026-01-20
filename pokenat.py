@@ -20,12 +20,14 @@ group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument("--load", dest="load", action="store_true")
 group.add_argument("--load-pokedexes", dest="load_pokedexes", action="store_true")
 group.add_argument("--load-version-groups", dest="load_version_groups", action="store_true")
+group.add_argument("--load-locations", dest="load_locations", action="store_true")
 parser.add_argument("-f", "--force", dest="force", action="store_true")
 parser.add_argument("-d", "--datafile", type=str, default="./data.json")
 parser.add_argument("-i", "--indexfile", type=str, default="./index.json")
 parser.add_argument("-g", "--langfile", type=str, default="./lang.json")
 parser.add_argument("-p", "--pokedexfile", type=str, default="./pokedexes.json")
 parser.add_argument("-v", "--versiongroupsfile", type=str, default="./version-groups.json")
+parser.add_argument("--locationsfile", type=str, default="./locations.json")
 parser.add_argument(
     "-n", "--language", action="store", dest="language", type=str, nargs="*", default=["en", "fr"],
 )
@@ -142,6 +144,20 @@ class VersionGroupSerializer(json.JSONEncoder):
             return data
 
 
+class LocationAreaSerializer(json.JSONEncoder):
+    def default(self, obj):
+        global lang_wanted
+        if isinstance(obj, pokebase.APIResource) and obj.endpoint == "location-area":
+            data = dict()
+            data["id"] = obj.id
+            data["name"] = obj.name
+            data["names"] = dict()
+            for name in obj.names:
+                if name.language.name in lang_wanted:
+                    data["names"][name.language.name] = name.name
+            return data
+
+
 # CORE ########################################################################
 
 
@@ -188,6 +204,38 @@ def prepare_version_groups():
         printProgressBar(i + 1, total, prefix=" Progress:", suffix="Complete", length=50)
 
     return d_version_groups
+
+
+def prepare_locations():
+    """Fetch all location-area names with translations from PokeAPI."""
+    global lang_wanted
+    d_locations = {}
+
+    # Get list of all location-areas
+    print("+ Fetching location-area list...")
+    location_list = pokebase.APIResourceList("location-area")
+    total = len(location_list)
+
+    print("+ Process %d location-areas:" % total)
+    printProgressBar(0, total, prefix=" Progress:", suffix="Complete", length=50)
+
+    for i, entry in enumerate(location_list):
+        location_name = entry["name"]
+        try:
+            location = pokebase.location_area(location_name)
+            data = json.loads(LocationAreaSerializer().encode(location))
+            # Only store if we have translations
+            if data["names"]:
+                d_locations[location_name] = {
+                    "id": data["id"],
+                    "names": data["names"]
+                }
+        except Exception as exc:
+            # Skip locations that fail to load
+            pass
+        printProgressBar(i + 1, total, prefix=" Progress:", suffix="Complete", length=50)
+
+    return d_locations
 
 
 def prepare(c_data, force=False):
@@ -281,6 +329,10 @@ if __name__ == "__main__":
         version_groups = prepare_version_groups()
         save_json_file(args.versiongroupsfile, version_groups)
         print("Version groups saved to %s" % args.versiongroupsfile)
+    elif args.load_locations:
+        locations = prepare_locations()
+        save_json_file(args.locationsfile, locations)
+        print("Locations saved to %s" % args.locationsfile)
     else:
 
         if args.id:

@@ -31,6 +31,10 @@ class LocalDataService {
     getVersionGroups() {
         return this.axios.get('/version-groups.json')
     }
+
+    getLocations() {
+        return this.axios.get('/locations.json')
+    }
 }
 
 export default new LocalDataService();
