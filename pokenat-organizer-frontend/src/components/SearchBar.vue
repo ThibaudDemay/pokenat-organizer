@@ -73,6 +73,10 @@ const searchBarRef = ref<HTMLElement | null>(null);
 
 const placeholder = computed(() => t('search.placeholder'));
 
+function normalizeString(str: string): string {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 const showResults = computed(() =>
     searchQuery.value.length > 0 && searchResults.value.length > 0 && isInputFocused.value
 );
@@ -80,11 +84,11 @@ const showResults = computed(() =>
 const matchingIds = computed(() => {
     if (searchQuery.value.length === 0) return new Set<number>();
 
-    const query = searchQuery.value.toLowerCase();
+    const query = normalizeString(searchQuery.value);
     const ids = new Set<number>();
 
     for (const entry of props.index) {
-        if (entry.name.toLowerCase().includes(query)) {
+        if (normalizeString(entry.name).includes(query)) {
             ids.add(Number(entry.id));
         }
     }
