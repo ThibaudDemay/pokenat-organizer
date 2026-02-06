@@ -308,6 +308,14 @@ def prepare_variants():
                         if not form_names:
                             form_names = base_names.copy()
 
+                        # Extract types
+                        types = [t.type.name for t in pokemon.types]
+
+                        # Extract stats
+                        stats = {}
+                        for stat in pokemon.stats:
+                            stats[stat.stat.name] = stat.base_stat
+
                         variant_data = {
                             "id": pokemon.id,
                             "name": pokemon.name,
@@ -315,7 +323,11 @@ def prepare_variants():
                             "sprite": pokemon.sprites.front_default if pokemon.sprites.front_default else "",
                             "versions": versions,
                             "isMega": is_mega,
-                            "isBattleOnly": is_battle_only
+                            "isBattleOnly": is_battle_only,
+                            "types": types,
+                            "height": pokemon.height,
+                            "weight": pokemon.weight,
+                            "stats": stats
                         }
                         variants.append(variant_data)
                     except Exception as exc:

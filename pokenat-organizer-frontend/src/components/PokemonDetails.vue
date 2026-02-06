@@ -159,16 +159,60 @@
                 </svg>
             </button>
             <div id="variants-content" class="accordion-content variants-list" v-show="isVariantsOpen" role="region">
-                <div class="variant-item" v-for="variant in pokemonVariants" :key="variant.id">
-                    <img v-if="variant.sprite" :src="variant.sprite" :alt="variant.names[locale] || variant.name" class="variant-sprite" />
-                    <div class="variant-info">
-                        <span class="variant-name">{{ variant.names[locale] || variant.names['en'] || variant.name }}</span>
-                        <div class="variant-badges">
-                            <span v-if="variant.isMega" class="variant-badge mega">Mega</span>
-                            <span v-if="variant.isBattleOnly" class="variant-badge battle-only">{{ t('pokemon.battleOnly') }}</span>
+                <div class="variant-entry" v-for="variant in pokemonVariants" :key="variant.id">
+                    <button class="variant-item" @click="expandedVariantId = expandedVariantId === variant.id ? null : variant.id">
+                        <img v-if="variant.sprite" :src="variant.sprite" :alt="variant.names[locale] || variant.name" class="variant-sprite" />
+                        <div class="variant-info">
+                            <span class="variant-name">{{ variant.names[locale] || variant.names['en'] || variant.name }}</span>
+                            <div class="variant-meta">
+                                <div class="variant-types">
+                                    <span
+                                        v-for="type in variant.types"
+                                        :key="type"
+                                        class="type-badge"
+                                        :class="type"
+                                    >
+                                        {{ t(`types.${type}`) }}
+                                    </span>
+                                </div>
+                                <span v-if="variant.isMega" class="variant-badge mega">Mega</span>
+                                <span v-if="variant.isBattleOnly" class="variant-badge battle-only">{{ t('pokemon.battleOnly') }}</span>
+                            </div>
+                            <div class="variant-games" v-if="variant.versions.length > 0">
+                                {{ variant.versions.map(v => getVersionName(v)).join(', ') }}
+                            </div>
                         </div>
-                        <div class="variant-games" v-if="variant.versions.length > 0">
-                            {{ variant.versions.map(v => getVersionName(v)).join(', ') }}
+                        <svg
+                            class="chevron"
+                            :class="{ open: expandedVariantId === variant.id }"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                        >
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div class="variant-details" v-show="expandedVariantId === variant.id">
+                        <!-- Infos physiques -->
+                        <div class="variant-physical">
+                            <div class="info-item">
+                                <span class="label">{{ t('pokemon.height') }}</span>
+                                <span class="value">{{ formatHeight(variant.height) }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">{{ t('pokemon.weight') }}</span>
+                                <span class="value">{{ formatWeight(variant.weight) }}</span>
+                            </div>
+                        </div>
+                        <!-- Stats -->
+                        <div class="variant-stats">
+                            <div class="stat-row" v-for="(value, name) in formatVariantStats(variant.stats)" :key="name">
+                                <span class="stat-name">{{ t(`stats.${name}`) }}</span>
+                                <div class="stat-bar-container">
+                                    <div class="stat-bar" :style="{ width: `${(value / 255) * 100}%` }"></div>
+                                </div>
+                                <span class="stat-value">{{ value }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -183,7 +227,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { Pokemon, VersionGroup, PokedexInfo, LocationArea, PokemonVariant } from '@/models/pokemon.model';
+import type { Pokemon, VersionGroup, PokedexInfo, LocationArea, PokemonVariant, VariantStats } from '@/models/pokemon.model';
 import PokeapiDataService, { PokemonDetailsStats, type PokemonDetails, type PokemonEncounter } from '@/services/PokeapiData.service';
 import Analytics from '@/services/Analytics.service';
 
@@ -201,6 +245,7 @@ const { t, locale } = useI18n();
 const isPokedexOpen = ref(false);
 const isEncountersOpen = ref(false);
 const isVariantsOpen = ref(false);
+const expandedVariantId = ref<number | null>(null);
 const details = ref<PokemonDetails | null>(null);
 const encounters = ref<PokemonEncounter[]>([]);
 const loading = ref(false);
@@ -395,6 +440,17 @@ function formatDexName(dex: string): string {
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
+}
+
+function formatVariantStats(stats: VariantStats): Record<string, number> {
+    return {
+        hp: stats['hp'] || 0,
+        attack: stats['attack'] || 0,
+        defense: stats['defense'] || 0,
+        specialAttack: stats['special-attack'] || 0,
+        specialDefense: stats['special-defense'] || 0,
+        speed: stats['speed'] || 0,
+    };
 }
 
 function formatHeight(decimeters: number): string {
@@ -655,11 +711,16 @@ function capitalize(str: string): string {
 
             // Variants list
             &.variants-list {
-                @apply max-h-64 overflow-y-auto space-y-1;
+                @apply max-h-80 overflow-y-auto space-y-1;
+
+                .variant-entry {
+                    @apply rounded overflow-hidden;
+                }
 
                 .variant-item {
-                    @apply flex items-center gap-2 p-2;
+                    @apply w-full flex items-center gap-2 p-2 text-left cursor-pointer;
                     @apply bg-white dark:bg-gray-700 rounded;
+                    @apply hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors;
 
                     .variant-sprite {
                         @apply w-12 h-12 flex-shrink-0;
@@ -672,11 +733,38 @@ function capitalize(str: string): string {
                             @apply block text-sm text-gray-700 dark:text-gray-200;
                         }
 
-                        .variant-badges {
-                            @apply flex gap-1 mt-0.5;
+                        .variant-meta {
+                            @apply flex flex-wrap items-center gap-1 mt-0.5;
+
+                            .variant-types {
+                                @apply flex gap-1;
+
+                                .type-badge {
+                                    @apply text-xs px-1.5 py-0 rounded text-white font-medium uppercase leading-relaxed;
+
+                                    &.normal { @apply bg-gray-400; }
+                                    &.fire { @apply bg-orange-500; }
+                                    &.water { @apply bg-blue-500; }
+                                    &.electric { @apply bg-yellow-400 text-gray-800; }
+                                    &.grass { @apply bg-green-500; }
+                                    &.ice { @apply bg-cyan-400; }
+                                    &.fighting { @apply bg-red-700; }
+                                    &.poison { @apply bg-purple-500; }
+                                    &.ground { @apply bg-amber-600; }
+                                    &.flying { @apply bg-indigo-400; }
+                                    &.psychic { @apply bg-pink-500; }
+                                    &.bug { @apply bg-lime-500; }
+                                    &.rock { @apply bg-stone-500; }
+                                    &.ghost { @apply bg-purple-700; }
+                                    &.dragon { @apply bg-violet-600; }
+                                    &.dark { @apply bg-gray-700; }
+                                    &.steel { @apply bg-slate-400; }
+                                    &.fairy { @apply bg-pink-300 text-gray-800; }
+                                }
+                            }
 
                             .variant-badge {
-                                @apply text-xs px-1.5 py-0.5 rounded font-medium;
+                                @apply text-xs px-1.5 py-0 rounded font-medium leading-relaxed;
 
                                 &.mega {
                                     @apply bg-gradient-to-r from-pink-500 to-purple-500 text-white;
@@ -690,6 +778,57 @@ function capitalize(str: string): string {
 
                         .variant-games {
                             @apply text-xs text-gray-400 dark:text-gray-500 mt-0.5;
+                        }
+                    }
+
+                    .chevron {
+                        @apply w-4 h-4 flex-shrink-0 text-gray-400 transition-transform;
+
+                        &.open {
+                            @apply rotate-180;
+                        }
+                    }
+                }
+
+                .variant-details {
+                    @apply px-3 py-2 bg-gray-50 dark:bg-gray-800 space-y-2;
+                    @apply border-t border-gray-200 dark:border-gray-600;
+
+                    .variant-physical {
+                        @apply flex gap-4;
+
+                        .info-item {
+                            .label {
+                                @apply text-xs text-gray-500 dark:text-gray-400 mr-1;
+                            }
+
+                            .value {
+                                @apply text-xs font-medium text-gray-700 dark:text-gray-200;
+                            }
+                        }
+                    }
+
+                    .variant-stats {
+                        @apply space-y-1;
+
+                        .stat-row {
+                            @apply flex items-center gap-2;
+
+                            .stat-name {
+                                @apply w-12 text-xs text-gray-500 dark:text-gray-400;
+                            }
+
+                            .stat-bar-container {
+                                @apply flex-1 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden;
+
+                                .stat-bar {
+                                    @apply h-full bg-red-500 rounded-full;
+                                }
+                            }
+
+                            .stat-value {
+                                @apply w-8 text-xs text-right text-gray-600 dark:text-gray-300;
+                            }
                         }
                     }
                 }

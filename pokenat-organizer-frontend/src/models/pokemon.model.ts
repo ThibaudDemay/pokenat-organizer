@@ -34,6 +34,15 @@ export interface LocationArea {
   names: Record<string, string>;
 }
 
+export interface VariantStats {
+  hp: number;
+  attack: number;
+  defense: number;
+  'special-attack': number;
+  'special-defense': number;
+  speed: number;
+}
+
 export interface PokemonVariant {
   id: number;
   name: string;
@@ -42,6 +51,10 @@ export interface PokemonVariant {
   versions: string[];
   isMega: boolean;
   isBattleOnly: boolean;
+  types: string[];
+  height: number;
+  weight: number;
+  stats: VariantStats;
 }
 
 export default Pokemon;
