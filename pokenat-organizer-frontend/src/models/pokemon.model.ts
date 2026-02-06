@@ -34,4 +34,14 @@ export interface LocationArea {
   names: Record<string, string>;
 }
 
+export interface PokemonVariant {
+  id: number;
+  name: string;
+  names: Record<string, string>;
+  sprite: string;
+  versions: string[];
+  isMega: boolean;
+  isBattleOnly: boolean;
+}
+
 export default Pokemon;

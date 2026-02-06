@@ -52,7 +52,9 @@
     "weight": "Poids",
     "generation": "Gén.",
     "games": "Jeux",
-    "whereToCatch": "Où capturer"
+    "whereToCatch": "Où capturer",
+    "variants": "Variantes",
+    "battleOnly": "Combat uniquement"
   },
   "stats": {
     "hp": "PV",

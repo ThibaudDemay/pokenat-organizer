@@ -138,6 +138,42 @@
                 </ul>
             </div>
         </div>
+
+        <!-- Accordéon Variantes -->
+        <div class="accordion" :class="{ disabled: pokemonVariants.length === 0 }" v-if="pokemonVariants.length > 0">
+            <button
+                class="accordion-header"
+                @click="isVariantsOpen = !isVariantsOpen"
+                :aria-expanded="isVariantsOpen"
+                aria-controls="variants-content"
+            >
+                <span>{{ t('pokemon.variants') }} ({{ pokemonVariants.length }})</span>
+                <svg
+                    class="chevron"
+                    :class="{ open: isVariantsOpen }"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                >
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <div id="variants-content" class="accordion-content variants-list" v-show="isVariantsOpen" role="region">
+                <div class="variant-item" v-for="variant in pokemonVariants" :key="variant.id">
+                    <img v-if="variant.sprite" :src="variant.sprite" :alt="variant.names[locale] || variant.name" class="variant-sprite" />
+                    <div class="variant-info">
+                        <span class="variant-name">{{ variant.names[locale] || variant.names['en'] || variant.name }}</span>
+                        <div class="variant-badges">
+                            <span v-if="variant.isMega" class="variant-badge mega">Mega</span>
+                            <span v-if="variant.isBattleOnly" class="variant-badge battle-only">{{ t('pokemon.battleOnly') }}</span>
+                        </div>
+                        <div class="variant-games" v-if="variant.versions.length > 0">
+                            {{ variant.versions.map(v => getVersionName(v)).join(', ') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div id="pokemon-details" class="empty" v-else>
         <p>{{ t('pokemon.selectPokemon') }}</p>
@@ -147,7 +183,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { Pokemon, VersionGroup, PokedexInfo, LocationArea } from '@/models/pokemon.model';
+import type { Pokemon, VersionGroup, PokedexInfo, LocationArea, PokemonVariant } from '@/models/pokemon.model';
 import PokeapiDataService, { PokemonDetailsStats, type PokemonDetails, type PokemonEncounter } from '@/services/PokeapiData.service';
 import Analytics from '@/services/Analytics.service';
 
@@ -157,12 +193,14 @@ const props = defineProps<{
     versionGroups: Record<string, VersionGroup>;
     pokedexes: Record<string, PokedexInfo>;
     locations: Record<string, LocationArea>;
+    variants: Record<string, PokemonVariant[]>;
 }>();
 
 const { t, locale } = useI18n();
 
 const isPokedexOpen = ref(false);
 const isEncountersOpen = ref(false);
+const isVariantsOpen = ref(false);
 const details = ref<PokemonDetails | null>(null);
 const encounters = ref<PokemonEncounter[]>([]);
 const loading = ref(false);
@@ -171,6 +209,12 @@ const loadingEncounters = ref(false);
 const pokedexCount = computed(() => {
     if (!props.pokemon) return 0;
     return Object.keys(props.pokemon.pokedex).length;
+});
+
+// Variants for the current pokemon
+const pokemonVariants = computed(() => {
+    if (!props.pokemon) return [];
+    return props.variants[String(props.pokemon.id)] || [];
 });
 
 // Obtenir les jeux associés à un pokédex
@@ -604,6 +648,48 @@ function capitalize(str: string): string {
                             @apply text-xs text-gray-600 dark:text-gray-300;
                             @apply px-2 py-0.5;
                             @apply border-b border-gray-100 dark:border-gray-600 last:border-b-0;
+                        }
+                    }
+                }
+            }
+
+            // Variants list
+            &.variants-list {
+                @apply max-h-64 overflow-y-auto space-y-1;
+
+                .variant-item {
+                    @apply flex items-center gap-2 p-2;
+                    @apply bg-white dark:bg-gray-700 rounded;
+
+                    .variant-sprite {
+                        @apply w-12 h-12 flex-shrink-0;
+                    }
+
+                    .variant-info {
+                        @apply flex-1 min-w-0;
+
+                        .variant-name {
+                            @apply block text-sm text-gray-700 dark:text-gray-200;
+                        }
+
+                        .variant-badges {
+                            @apply flex gap-1 mt-0.5;
+
+                            .variant-badge {
+                                @apply text-xs px-1.5 py-0.5 rounded font-medium;
+
+                                &.mega {
+                                    @apply bg-gradient-to-r from-pink-500 to-purple-500 text-white;
+                                }
+
+                                &.battle-only {
+                                    @apply bg-orange-200 text-orange-800 dark:bg-orange-700 dark:text-orange-100;
+                                }
+                            }
+                        }
+
+                        .variant-games {
+                            @apply text-xs text-gray-400 dark:text-gray-500 mt-0.5;
                         }
                     }
                 }

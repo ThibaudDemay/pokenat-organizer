@@ -52,7 +52,9 @@
     "weight": "Weight",
     "generation": "Gen.",
     "games": "Games",
-    "whereToCatch": "Where to catch"
+    "whereToCatch": "Where to catch",
+    "variants": "Variants",
+    "battleOnly": "Battle only"
   },
   "stats": {
     "hp": "HP",

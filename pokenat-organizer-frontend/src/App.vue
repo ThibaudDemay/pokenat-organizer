@@ -49,6 +49,7 @@
             :versionGroups="versionGroups"
             :pokedexes="pokedexes"
             :locations="locations"
+            :variants="variants"
           />
         </aside>
       </div>
@@ -61,6 +62,7 @@
           :versionGroups="versionGroups"
           :pokedexes="pokedexes"
           :locations="locations"
+          :variants="variants"
         />
       </MobileDrawer>
     </template>
@@ -72,7 +74,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { Pokemon, PokedexInfo, VersionGroup, LocationArea } from '@/models/pokemon.model';
+import type { Pokemon, PokedexInfo, VersionGroup, LocationArea, PokemonVariant } from '@/models/pokemon.model';
 import LocalDataService from '@/services/LocalData.service';
 import Analytics from '@/services/Analytics.service';
 import Header from '@/components/Header.vue';
@@ -96,6 +98,7 @@ const pokedex = ref<Pokemon[]>([]);
 const pokedexes = ref<Record<string, PokedexInfo>>({});
 const versionGroups = ref<Record<string, VersionGroup>>({});
 const locations = ref<Record<string, LocationArea>>({});
+const variants = ref<Record<string, PokemonVariant[]>>({});
 const selectedPokedex = ref('national');
 const selectedPokemon = ref<Pokemon | null>(null);
 const loading = ref(true);
@@ -127,13 +130,14 @@ async function loadData() {
   error.value = null;
 
   try {
-    const [langResponse, indexResponse, pokedexResponse, pokedexesResponse, versionGroupsResponse, locationsResponse] = await Promise.all([
+    const [langResponse, indexResponse, pokedexResponse, pokedexesResponse, versionGroupsResponse, locationsResponse, variantsResponse] = await Promise.all([
       LocalDataService.getLanguage(),
       LocalDataService.getIndex(),
       LocalDataService.getPokedex(),
       LocalDataService.getPokedexes(),
       LocalDataService.getVersionGroups(),
-      LocalDataService.getLocations()
+      LocalDataService.getLocations(),
+      LocalDataService.getVariants()
     ]);
 
     languages.value = langResponse.data;
@@ -150,6 +154,7 @@ async function loadData() {
     pokedexes.value = pokedexesResponse.data;
     versionGroups.value = versionGroupsResponse.data;
     locations.value = locationsResponse.data;
+    variants.value = variantsResponse.data;
 
   } catch (e) {
     error.value = t('app.loadError');

@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 
 import argparse
-import pokebase
 import json
 
+import pokebase
 from requests.exceptions import HTTPError
 
 parser = argparse.ArgumentParser(allow_abbrev=False)
@@ -21,6 +21,7 @@ group.add_argument("--load", dest="load", action="store_true")
 group.add_argument("--load-pokedexes", dest="load_pokedexes", action="store_true")
 group.add_argument("--load-version-groups", dest="load_version_groups", action="store_true")
 group.add_argument("--load-locations", dest="load_locations", action="store_true")
+group.add_argument("--load-variants", dest="load_variants", action="store_true")
 parser.add_argument("-f", "--force", dest="force", action="store_true")
 parser.add_argument("-d", "--datafile", type=str, default="./data.json")
 parser.add_argument("-i", "--indexfile", type=str, default="./index.json")
@@ -28,6 +29,7 @@ parser.add_argument("-g", "--langfile", type=str, default="./lang.json")
 parser.add_argument("-p", "--pokedexfile", type=str, default="./pokedexes.json")
 parser.add_argument("-v", "--versiongroupsfile", type=str, default="./version-groups.json")
 parser.add_argument("--locationsfile", type=str, default="./locations.json")
+parser.add_argument("--variantsfile", type=str, default="./variants.json")
 parser.add_argument(
     "-n", "--language", action="store", dest="language", type=str, nargs="*", default=["en", "fr"],
 )
@@ -238,6 +240,100 @@ def prepare_locations():
     return d_locations
 
 
+def format_variant_name(name):
+    """Format a variant name like 'pikachu-rock-star' to 'Pikachu Rock Star'."""
+    return ' '.join(word.capitalize() for word in name.split('-'))
+
+
+def prepare_variants():
+    """Fetch all pokemon variants (non-default forms) from PokeAPI."""
+    global lang_wanted
+    d_variants = {}
+
+    # Get national pokedex to iterate through all species
+    print("+ Fetching national pokedex...")
+    pokedex = pokebase.pokedex("national")
+    total = len(pokedex.pokemon_entries)
+
+    print("+ Process %d species for variants:" % total)
+    printProgressBar(0, total, prefix=" Progress:", suffix="Complete", length=50)
+
+    for i, pokemon_entry in enumerate(pokedex.pokemon_entries):
+        species_id = pokemon_entry.entry_number
+        try:
+            # Get pokemon species data to check varieties
+            species = pokebase.pokemon_species(species_id)
+
+            # Check if this species has multiple varieties
+            if len(species.varieties) > 1:
+                variants = []
+
+                # Get the base pokemon names for fallback
+                base_names = {}
+                for name in species.names:
+                    if name.language.name in lang_wanted:
+                        base_names[name.language.name] = name.name
+
+                for variety in species.varieties:
+                    # Skip the default form
+                    if variety.is_default:
+                        continue
+
+                    try:
+                        # Get pokemon data for sprite and game versions
+                        pokemon = variety.pokemon
+
+                        # Get game versions where this variant appears
+                        versions = []
+                        if hasattr(pokemon, 'game_indices') and pokemon.game_indices:
+                            for gi in pokemon.game_indices:
+                                versions.append(gi.version.name)
+
+                        # Try to get form names and metadata
+                        form_names = {}
+                        is_mega = False
+                        is_battle_only = False
+
+                        for form in pokemon.forms:
+                            # Get names from form
+                            for name in form.names:
+                                if name.language.name in lang_wanted:
+                                    form_names[name.language.name] = name.name
+                            # Get form metadata (usually only 1 form per variant)
+                            is_mega = getattr(form, 'is_mega', False)
+                            is_battle_only = getattr(form, 'is_battle_only', False)
+                            break  # Only use first form
+
+                        # If still no names, use base names (same as origin)
+                        if not form_names:
+                            form_names = base_names.copy()
+
+                        variant_data = {
+                            "id": pokemon.id,
+                            "name": pokemon.name,
+                            "names": form_names,
+                            "sprite": pokemon.sprites.front_default if pokemon.sprites.front_default else "",
+                            "versions": versions,
+                            "isMega": is_mega,
+                            "isBattleOnly": is_battle_only
+                        }
+                        variants.append(variant_data)
+                    except Exception as exc:
+                        # Skip variants that fail to load
+                        pass
+
+                if variants:
+                    d_variants[str(species_id)] = variants
+
+        except Exception as exc:
+            # Skip species that fail to load
+            pass
+
+        printProgressBar(i + 1, total, prefix=" Progress:", suffix="Complete", length=50)
+
+    return d_variants
+
+
 def prepare(c_data, force=False):
     global lang_wanted
     d_pokedex = {}
@@ -333,6 +429,10 @@ if __name__ == "__main__":
         locations = prepare_locations()
         save_json_file(args.locationsfile, locations)
         print("Locations saved to %s" % args.locationsfile)
+    elif args.load_variants:
+        variants = prepare_variants()
+        save_json_file(args.variantsfile, variants)
+        print("Variants saved to %s" % args.variantsfile)
     else:
 
         if args.id:
