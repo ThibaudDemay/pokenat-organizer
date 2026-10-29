@@ -1,0 +1,43 @@
+name: deploy pokenat
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    defaults:
+      run:
+        working-directory: pokenat-organizer-frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: yarn
+          cache-dependency-path: pokenat-organizer-frontend/yarn.lock
+
+      - name: Install deps
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+        env:
+          VITE_MATOMO_HOST: ${{ vars.VITE_MATOMO_HOST }}
+          VITE_MATOMO_SITE_ID: ${{ vars.VITE_MATOMO_SITE_ID }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: pokenat-organizer-frontend
+          command: pages deploy dist --project-name=pokenat --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
