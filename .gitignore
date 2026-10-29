@@ -1,10 +1,42 @@
-
-*.json
-!pokenat-organizer-frontend/**/*.json
-pokenat-organizer-frontend/public/api/*.json
-
-node_modules/
-
+# ─── OS / éditeurs ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
 .vs_code/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
+# ─── Python (CLI pokenat.py) ─────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pdm-python
+.pdm-build/
+
+# Données brutes générées par `pdm run download_pokedex` à la racine.
+# La copie utilisée par le site (frontend/public/api/*.json) est versionnée.
+/*.json
+
+# Archives d'export
 *.tar.gz
+
+# ─── Frontend (Vue / Vite) ───────────────────────────────────
+pokenat-organizer-frontend/node_modules/
+pokenat-organizer-frontend/dist/
+pokenat-organizer-frontend/dev-dist/
+
+# Variables d'environnement locales (Matomo…) — seul .env.example est versionné
+pokenat-organizer-frontend/.env
+pokenat-organizer-frontend/.env.*
+!pokenat-organizer-frontend/.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
